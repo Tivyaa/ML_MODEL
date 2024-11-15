@@ -30,3 +30,10 @@ try:
     print(f"Predicted output is: {label_target[predicted_class]}")
 except ValueError:
     print("Please supply valid input...")
+
+
+o/p
+Enter number of neighbors: 10
+The Score is: 0.9777777777777777
+Enter Test Data : 6.2,2.6,3.4,0.6
+Predicted output is: ['versicolor']
