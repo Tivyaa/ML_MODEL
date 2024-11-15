@@ -1,0 +1,21 @@
+
+from sklearn import datasets
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import seaborn as sns
+
+iris = datasets.load_iris()
+df = pd.DataFrame(iris['data'], columns=iris['feature_names'])
+print(df.head())
+
+scaler = StandardScaler()
+scaled_data = pd.DataFrame(scaler.fit_transform(df))
+print(scaled_data.head())
+
+pca = PCA(n_components=3)
+data_pca = pca.fit_transform(scaled_data)
+data_pca = pd.DataFrame(data_pca, columns=['PC1', 'PC2', 'PC3'])
+print(data_pca.head())
+
+sns.heatmap(data_pca.corr(), annot=True)
