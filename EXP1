@@ -1,0 +1,55 @@
+import pandas as pd
+import numpy as np
+
+data = pd.DataFrame({
+    'Outlook': ['Sunny', 'Sunny', 'Overcast', 'Rainy', 'Rainy', 'Rainy', 'Overcast', 'Sunny', 'Sunny', 'Rainy',
+                'Sunny', 'Overcast', 'Overcast'],
+    'Temperature': ['Hot', 'Hot', 'Hot', 'Mild', 'Cool', 'Cool', 'Cool', 'Mild', 'Cool', 'Mild',
+                    'Mild', 'Hot', 'Mild'],
+    'Humidity': ['High', 'High', 'High', 'High', 'Normal', 'Normal', 'Normal', 'High', 'Normal', 'Normal',
+                 'Normal', 'High', 'High'],
+    'Windy': [False, True, False, False, False, True, True, False, False, True, True, False, True],
+    'Play Tennis': ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes']
+})
+
+def entropy(column):
+    probs = column.value_counts(normalize=True)
+    return -np.sum(probs * np.log2(probs))
+
+def information_gain(data, feature, target):
+    total_entropy = entropy(data[target])
+    values, counts = np.unique(data[feature], return_counts=True)
+    weighted_entropy = sum((counts[i] / len(data)) * entropy(data[data[feature] == values[i]][target]) for i in range(len(values)))
+    return total_entropy - weighted_entropy
+
+def build_tree(data, features, target):
+    if len(data[target].unique()) == 1:
+        return data[target].iloc[0]
+    if not features:
+        return data[target].mode().iloc[0]
+
+    gains = {feature: information_gain(data, feature, target) for feature in features}
+    best_feature = max(gains, key=gains.get)
+    tree = {best_feature: {}}
+
+    for value in data[best_feature].unique():
+        subset = data[data[best_feature] == value]
+        subtree = build_tree(subset, [f for f in features if f != best_feature], target)
+        tree[best_feature][value] = subtree
+
+    return tree
+
+def classify(tree, sample):
+    if not isinstance(tree, dict):
+        return tree
+    feature = next(iter(tree))
+    value = sample.get(feature)
+    return classify(tree[feature].get(value, None), sample)
+
+features = ['Outlook', 'Temperature', 'Humidity', 'Windy']
+target = 'Play Tennis'
+decision_tree = build_tree(data, features, target)
+print("\nDecision Tree:", decision_tree)
+
+new_sample = {'Outlook': 'Sunny', 'Temperature': 'Cool', 'Humidity': 'High', 'Windy': False}
+print("\nClassification for new sample:", classify(decision_tree, new_sample))
